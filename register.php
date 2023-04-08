@@ -1,28 +1,27 @@
 <?php
-// Connect to MySQL
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "membership_app";
-$conn = mysqli_connect($host, $user, $password, $dbname);
+// Connect to the database
+$conn = mysqli_connect("localhost", "username", "password", "membership_app");
 
+// Check for form submission
+if (isset($_POST['submit'])) {
+  // Retrieve form data
+  $name = $_POST['name'];
+  $email = $_POST['email'];
+  $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-// // Retrieve notes from the database
-// $sql = "SELECT * FROM membership_app";
-// $result = mysqli_query($conn, $sql);
+  // Insert new user into the database
+  $sql = "INSERT INTO users (name, email, password) VALUES ('$name', '$email', '$password')";
+  if (mysqli_query($conn, $sql)) {
+    echo "Registration successful";
+  } else {
+    echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+  }
+}
 
-// Get user input from form
-$name = $_POST['name'];
-$email = $_POST['email'];
-$password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-
-// Insert user into "users" table
-$sql = "INSERT INTO users (name, email, password) VALUES ('$name', '$email', '$password')";
-mysqli_query($conn, $sql);
-
-// Close MySQL connection
+// Close the database connection
 mysqli_close($conn);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -33,14 +32,19 @@ mysqli_close($conn);
     <title>Registration Form</title>
 </head>
 <body>
-    <form action="register.php" method="POST">
+    <h2>Register</h2>
+    <form action="register.php" method="post">
         <label for="name">Name:</label>
-        <input type="text" name="name" required>
+        <input type="text" name="name" required><br>
+
         <label for="email">Email:</label>
-        <input type="email" name="email" required>
+        <input type="email" name="email" required><br>
+
         <label for="password">Password:</label>
-        <input type="password" name="password" required>
-        <button type="submit">Register</button>
+        <input type="password" name="password" required><br>
+
+        <input type="submit" name="submit" value="Register">
     </form>
+
 </body>
 </html>

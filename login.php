@@ -1,48 +1,52 @@
-
 <?php
-// Start session
+// Start a session
 session_start();
 
-// Check if user is already logged in
-if (isset($_SESSION['user_id'])) {
-    header('Location: dashboard.php');
-    exit;
-}
+// Connect to the database
+$conn = mysqli_connect("localhost", "username", "password", "membership_app");
 
-// Check if login form has been submitted
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get user input from form
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+// Check for form submission
+if (isset($_POST['submit'])) {
+  // Retrieve form data
+  $email = $_POST['email'];
+  $password = $_POST['password'];
 
-    // Connect to MySQL
-    $conn = mysqli_connect('localhost', 'username', 'password', 'database');
+  // Check if the user exists in the database
+  $sql = "SELECT * FROM users WHERE email='$email'";
+  $result = mysqli_query($conn, $sql);
+  if (mysqli_num_rows($result) == 1) {
+    // Retrieve the user's data
+    $row = mysqli_fetch_assoc($result);
+    $hashed_password = $row['password'];
 
-    // Lookup user in "users" table by email
-    $sql = "SELECT id, password FROM users WHERE email='$email'";
-    $result = mysqli_query($conn, $sql);
-    $user = mysqli_fetch_assoc($result);
-
-    // Verify password hash with password_verify() function
-    if ($user && password_verify($password, $user['password'])) {
-        // Login successful, set session variables
-        $_SESSION['user_id'] = $user['id'];
-
-        // Close MySQL connection
-        mysqli_close($conn);
-
-        // Redirect to dashboard page
-        header('Location: dashboard.php');
-        exit;
+    // Check if the password is correct
+    if (password_verify($password, $hashed_password)) {
+      // Authentication successful
+      $_SESSION['user_id'] = $row['id'];
+      $_SESSION['user_name'] = $row['name'];
+      header("Location: profile.php");
+      exit();
     } else {
-        // Login failed, show error message
-        $error_msg = 'Invalid email or password';
+      // Incorrect password
+      echo "Incorrect password";
     }
-
-    // Close MySQL connection
-    mysqli_close($conn);
+  } else {
+    // User not found
+    echo "User not found";
+  }
 }
+
+// Retrieve the user's role from the database
+$sql = "SELECT r.name FROM users u INNER JOIN roles r ON u.role_id = r.id WHERE u.id = {$_SESSION['user_id']}";
+$result = mysqli_query($conn, $sql);
+$row = mysqli_fetch_assoc($result);
+$user_role = $row['name'];
+
+
+// Close the database connection
+mysqli_close($conn);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,13 +56,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Login</title>
 </head>
 <body>
-<form action="login.php" method="POST">
+<h2>Login</h2>
+    <form action="login.php" method="post">
     <label for="email">Email:</label>
-    <input type="email" name="email" required>
+    <input type="email" name="email" required><br>
+
     <label for="password">Password:</label>
-    <input type="password" name="password" required>
-    <button type="submit">Login</button>
-</form>
+    <input type="password" name="password" required><br>
+
+    <input type="submit" name="submit" value="Login">
+    </form>
+
 
 </body>
 </html>
