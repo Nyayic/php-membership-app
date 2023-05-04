@@ -35,19 +35,15 @@ if (isset($_POST['submit'])) {
     echo "User not found";
   }
 }
-
 // Retrieve the user's role from the database
 $sql = "SELECT r.name FROM users u INNER JOIN roles r ON u.role_id = r.id WHERE u.id = {$_SESSION['user_id']}";
 $result = mysqli_query($conn, $sql);
 $row = mysqli_fetch_assoc($result);
 $user_role = $row['name'];
 
-
 // Close the database connection
 mysqli_close($conn);
 ?>
-
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -56,17 +52,13 @@ mysqli_close($conn);
     <title>Login</title>
 </head>
 <body>
-<h2>Login</h2>
-    <form action="login.php" method="post">
+  <h2>Login</h2>
+  <form action="login.php" method="post">
     <label for="email">Email:</label>
     <input type="email" name="email" required><br>
-
     <label for="password">Password:</label>
     <input type="password" name="password" required><br>
-
     <input type="submit" name="submit" value="Login">
-    </form>
-
-
+  </form>
 </body>
 </html>
